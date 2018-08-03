@@ -125,7 +125,8 @@ ForEach($Test in $Tests) {
 		StdErr = $safe_error
 	}
 	$body_json = $body | ConvertTo-Json -Compress
-	Invoke-RestMethod -Method Put -Uri ("{0}api/tests" -f $Env:APPVEYOR_API_URL) -Body $body_json
+	echo $body_json
+	Invoke-RestMethod -Method Put -Uri ("{0}api/tests" -f $Env:APPVEYOR_API_URL) -ContentType "application/json" -Body $body_json
 }
 
 exit $ErrorCode
