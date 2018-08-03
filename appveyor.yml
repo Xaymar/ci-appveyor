@@ -1,0 +1,25 @@
+matrix:
+  fast_finish: true
+
+image:
+  - Visual Studio 2015
+
+platform: x64
+
+environment:
+  matrix:
+    - RuntimeURL: https://nodejs.org/download/release
+      RuntimeName: node
+      RuntimeVersion: v9.4.0
+  NodeVersion: 9
+
+install:
+  - ps: Install-Product node $env:NodeVersion
+
+build_script:
+  - echo "Build"
+
+test: off
+
+test_script:
+  - ps: .\ci\appveyor-test-runner.ps1

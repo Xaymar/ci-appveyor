@@ -1,0 +1,2 @@
+console.error("This test is meant to test the output capabilities of Node.js and the proper displaying of it in the test runner.");
+console.error("It should show two separate lines with its own content each under standard error.");
