@@ -31,6 +31,22 @@ class Test
 	}
 	
 	# AppVeyor Invoker
+	Register() {
+		$body = @{
+			testName = $this.GetDisplayName()
+			testFramework = $this.Framework
+			fileName = $this.File
+			durationMilliseconds = $this.Duration
+			outcome = $this.Outcome
+			ErrorMessage = $this.ErrorMessage
+			ErrorStackTrace = $this.ErrorStackTrace
+			StdOut = $this.StdOut
+			StdErr = $this.StdErr
+		}
+		$body_json = $body | ConvertTo-Json -Compress
+		Invoke-RestMethod -Method Post -Uri ("{0}api/tests" -f $Env:APPVEYOR_API_URL) -ContentType "application/json" -Body $body_json
+	}
+	
 	Update() {
 		$body = @{
 			testName = $this.GetDisplayName()
@@ -83,9 +99,11 @@ class Test
 		$safe_output = ""
 		$stat_error = ""
 		$safe_error = ""
-	
-		$this.AppendStdOut(("-- Iteration {0} running --" -f $it))
-		$this.AppendStdErr(("-- Iteration {0} running --" -f $it))
+		
+		Write-Host -NoNewline ("    Try {0}... " -f ($it + 1))
+		
+		$this.AppendStdOut(("-- Iteration {0} running --`n" -f $it))
+		$this.AppendStdErr(("-- Iteration {0} running --`n" -f $it))
 		
 		$sw = [Diagnostics.Stopwatch]::StartNew()
 		$proc = Start-Process -File "node.exe" -ArgumentList ("`"{0}`"" -f $this.File) -RedirectStandardOutput stdout.log -RedirectStandardError stderr.log -Wait -PassThru -NoNewWindow
@@ -106,8 +124,10 @@ class Test
 		$this.AppendStdErr($safe_error)
 		
 		if ($proc.ExitCode -eq 0) {
+			Write-Host "Success"
 			return $true
 		} else {
+			Write-Host "Failed"
 			return $false
 		}
 	}
@@ -116,8 +136,8 @@ class Test
 		$rcode = $true
 		$failed_count = 0
 		
+		Write-Host ("Test '{0}' running..." -f $this.GetDisplayName())
 		$this.SetOutcome("Running");
-		echo ("Test '{0}' running..." -f $this.GetDisplayName())
 		For ($i = 0; $i -lt $its; $i++) {
 			$result = $this.Execute($i)
 			if ($result -eq $false) {
@@ -168,7 +188,7 @@ ForEach($Category in $Categories) {
 		$Tests += $Test
 		
 		# Register to AppVeyor
-		$Test.Update()
+		$Test.Register()
 		
 		echo "    Test '$Name' registered."		
 	}
